@@ -1,0 +1,32 @@
+{
+  "name": "grimoire",
+  "description": "framework for phantomjs",
+  "version": "0.1.0",
+  "author": {
+    "name": "Ben Sack",
+    "email": "ben@sack.io"
+  },
+  "main": "grimoire.js",
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "scripts": {
+    "test": "grunt nodeunit"
+  },
+  "devDependencies": {
+    "grunt-contrib-jshint": "~0.6.4",
+    "grunt-contrib-nodeunit": "~0.2.0",
+    "grunt-contrib-watch": "~0.5.3",
+    "grunt": "~0.4.5"
+  , "optionall": "*"
+  , "winston": "*"
+  , "its-thinking": "*"
+  },
+  "keywords": []
+, "dependencies": {
+    "async": "*"
+  , "underscore": "*"
+  , "jsbelt": "git://github.com/sackio/jsbelt.git#master"
+  , "moment": "*"
+  }
+}
