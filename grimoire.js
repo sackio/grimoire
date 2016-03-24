@@ -212,7 +212,7 @@ var Grimoire = function(O){
     return a.o.page;
   };
   
-  M['getSelector'] = function(options, callback){
+/*  M['getSelector'] = function(options, callback){
     var a = Belt.argulint(arguments)
       , self = this;
     a.o = _.defaults(a.o, {
@@ -260,6 +260,9 @@ var Grimoire = function(O){
         if (a.o.verbose) console.log('Locating selector "' + a.o.selector + '"'
                                     + (a.o.content ? (' with content "' + a.o.content + '"') : '') + '...');
 
+        if (!_.isRegExp(a.o.content)) a.o.content = new RegExp(a.o.content);
+        if (a.o.count) a.o.count = Belt.cast(a.o.count, 'number');
+
         var evaluator = function(){
           if (a.o.verbose) console.log('[selector check]');
 
@@ -291,7 +294,7 @@ var Grimoire = function(O){
               if (!o.count && !o.multiple) break; //single element is fine
             }
 
-            if (o.count && els.length < o.count) return;
+            if (o.count && sels.length < o.count) return;
 
             if (o.transformer) sels.forEach(function(e, i){
               return sels[i] = o.transformer(e, sels, o, i);
@@ -315,7 +318,7 @@ var Grimoire = function(O){
         return evaluator();
       }
     ], a.cb);
-  };
+  };*/
 
   M['inspectPage'] = function(options, callback){
     var a = Belt.argulint(arguments)
@@ -437,13 +440,16 @@ var Grimoire = function(O){
             }
           });
         } catch(e){
-          res.statusCode = 200;
-          res.setHeader('Content-type', 'application/json');
-
-          if (res) res.write(JSON.stringify({
-            'error': e.message
-          }));
-          if (res) res.closeGracefully();
+          try {
+            if (res){
+              res.statusCode = 200;
+              res.setHeader('Content-type', 'application/json');
+              res.write(JSON.stringify({
+                'error': e.message
+              }));
+              res.closeGracefully();
+            }
+          } catch(e) {}
         }
       }
     });

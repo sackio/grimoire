@@ -21,6 +21,7 @@
   , "optionall": "*"
   , "winston": "*"
   , "its-thinking": "*"
+  , "request": "*"
   },
   "keywords": []
 , "dependencies": {
