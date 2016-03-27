@@ -211,6 +211,120 @@ var Grimoire = function(O){
 
     return a.o.page;
   };
+  
+  M['getSelector'] = function(options, callback){
+    var a = Belt.argulint(arguments)
+      , self = this;
+    a.o = _.defaults(a.o, {
+      //selector
+      //content
+      //page
+      //visible
+      //multiple
+      //count
+      //filter
+      //transformer
+      'repeat_interval': 100
+    , 'timeout': 10000
+    , 'uuid': Belt.uuid()
+    });
+
+    var gb = {};
+    return Async.waterfall([
+      function(cb){
+        var ocb = _.once(function(err, selector){
+          if (gb.interval) clearInterval(gb.interval);
+          if (gb.timeout) clearTimeout(gb.timeout);
+
+          Belt.delete(a.o.page, 'listeners.onCallback.' + a.o.uuid);
+
+          if (err){
+            if (a.o.verbose) console.log(err);
+          } else {
+            if (a.o.verbose) console.log(Belt.stringify(selector));
+          }
+
+          return cb(err, selector);
+        });
+
+        gb['timeout'] = setTimeout(function(){
+          return ocb(new Error('timeout'));
+        }, a.o.timeout);
+
+        a.o.page.listeners.onCallback[a.o.uuid] = function(err, sel, uuid){
+          if (uuid !== a.o.uuid) return;
+
+          return ocb(undefined, sel);
+        };
+
+        if (a.o.verbose) console.log('Locating selector "' + a.o.selector + '"'
+                                    + (a.o.content ? (' with content "' + a.o.content + '"') : '') + '...');
+
+        if (a.o.count) a.o.count = Belt.cast(a.o.count, 'number');
+        if (a.o.filter) a.o.filter = Belt.cast(a.o.filter, 'string');
+        if (a.o.transformer) a.o.transformer = Belt.cast(a.o.transformer, 'string');
+
+        var evaluator = function(){
+          if (a.o.verbose) console.log('[selector check]');
+
+          return a.o.page.evaluateAsync(function(o){
+            var els = document.documentElement.querySelectorAll(o.selector);
+
+            if (!els || !els[0]) return;
+            if (o.count && els.length < o.count) return;
+
+            var sels = [], cur;
+
+            if (o.content) o.content = new RegExp(o.content, o.content_options);
+            if (o.filter) eval('o.filter = ' + o.filter);
+            if (o.transformer) eval('o.transformer = ' + o.transformer);
+
+            //filtering
+            for (var i = 0; i < els.length; i++){
+              if (o.content && !els[i].innerText.match(o.content)) continue; //content mismatch
+              if (o.filter && !o.filter(els[i], els, o)) continue; //filter mismatch
+
+              cur = els[i].getBoundingClientRect();
+              if (o.visible && !cur.top && !cur.left && !cur.width && !cur.height) continue; //not visible
+
+              sels.push({
+                'el': els[i]
+              , 'rect': cur
+              , 'attr': {
+                  'innerText': els[i].innerText
+                , 'innerHTML': els[i].innerHTML
+                , 'outerHTML': els[i].outerHTML
+                }
+              });
+
+              if (!o.count && !o.multiple) break; //single element is fine
+            }
+
+            if (o.count && sels.length < o.count) return;
+
+            if (o.transformer) sels.forEach(function(e, i){
+              return sels[i] = o.transformer(e, sels, o, i);
+            });
+
+            sels.forEach(function(e, i){
+              delete e.el;
+            });
+
+            if (!o.count && !o.multiple) sels = sels.shift();
+
+            return window.callPhantom(null, sels);
+
+          }, 0, _.omit(a.o, ['page']));
+        };
+
+        gb['interval'] = setInterval(function(){
+          return evaluator();
+        }, a.o.interval);
+
+        return evaluator();
+      }
+    ], a.cb);
+  };
 
   M['inspectPage'] = function(options, callback){
     var a = Belt.argulint(arguments)
@@ -304,6 +418,7 @@ var Grimoire = function(O){
         }
       }
 
+      if (query.timeout) query.timeout = Belt.cast(query.timeout, 'number');
       /*
         run method
       */
