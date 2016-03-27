@@ -297,6 +297,7 @@ var Grimoire = function(O){
                   'innerText': els[i].innerText
                 , 'innerHTML': els[i].innerHTML
                 , 'outerHTML': els[i].outerHTML
+                , 'value': els[i].value
                 }
               });
 
