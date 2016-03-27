@@ -287,6 +287,9 @@ var Grimoire = function(O){
               cur = els[i].getBoundingClientRect();
               if (o.visible && !cur.top && !cur.left && !cur.width && !cur.height) continue; //not visible
 
+              cur['x'] = (cur.left || 0) + ((cur.width || 0) / 2);
+              cur['y'] = (cur.top || 0) + ((cur.height || 0) / 2);
+
               sels.push({
                 'el': els[i]
               , 'rect': cur
