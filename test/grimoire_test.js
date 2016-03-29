@@ -19,6 +19,20 @@ var gb = {
 
 log.add(Winston.transports.Console, {'level': 'debug', 'colorize': true, 'timestamp': false});
 
+var Cleanup = function(err){
+  return Async.waterfall([
+    function(cb){
+      Belt.get(gb, 'server.kill()');
+      return cb();
+    }
+  ], function(err){
+    return process.exit();
+  });
+};
+process.on('SIGTERM', Cleanup);
+process.on('SIGHUP', Cleanup);
+process.on('SIGINT', Cleanup);
+
 exports['server'] = {
   'startServer': function(test){
     var test_name = 'startServer';
@@ -27,7 +41,7 @@ exports['server'] = {
 
     gb['server'] = CP.spawn('phantomjs', [
       'wrapper.js'
-    , '--verbose=true'
+    //, '--verbose=true'
     , '--startServer'
     , '--port=' + gb.port
     ], {
@@ -40,9 +54,9 @@ exports['server'] = {
       return test.done();
     });
 
-    /*gb.server.stdout.on('data', function(d){
+    gb.server.stdout.on('data', function(d){
       console.log(d.toString());
-    });*/
+    });
   }
 , 'createPage': function(test){
     var test_name = 'createPage';
@@ -134,6 +148,7 @@ exports['server'] = {
       test.ok(body.data.rect.width && body.data.rect.left);
 
       log.profile(test_name);
+
       return test.done();
     });
   }
@@ -157,6 +172,7 @@ exports['server'] = {
 
       test.ok(body.data.page_uuid === gb.page);
       delete body.data.page_uuid;
+      delete body.data.request_uuid;
       test.ok(_.size(body.data) === 2);
 
       _.each(body.data, function(e){
@@ -188,6 +204,7 @@ exports['server'] = {
 
       test.ok(body.data.page_uuid === gb.page);
       delete body.data.page_uuid;
+      delete body.data.request_uuid;
       test.ok(_.size(body.data) === 2);
 
       _.each(body.data, function(e){
@@ -218,6 +235,7 @@ exports['server'] = {
 
       test.ok(body.data.page_uuid === gb.page);
       delete body.data.page_uuid;
+      delete body.data.request_uuid;
       test.ok(_.size(body.data) > 2);
 
       log.profile(test_name);
@@ -244,6 +262,7 @@ exports['server'] = {
 
       test.ok(body.data.page_uuid === gb.page);
       delete body.data.page_uuid;
+      delete body.data.request_uuid;
 
       test.ok(body.error === 'timeout');
       test.ok(!_.size(body.data));
@@ -262,7 +281,7 @@ exports['server'] = {
     , 'qs': {
         'method': 'getSelector'
       , 'page': gb.page
-      , 'selector': '#searchInput'
+      , 'selector': '#searchInputddd'
       , 'timeout': 1
       }
     , 'json': true
@@ -364,7 +383,7 @@ exports['server'] = {
       return test.done();
     });
   }
-/*, 'getSelector - filter, none found': function(test){
+, 'getSelector - filter, none found': function(test){
     var test_name = 'getSelector - filter, none found';
     log.debug(test_name);
     log.profile(test_name);
@@ -375,15 +394,157 @@ exports['server'] = {
         'method': 'getSelector'
       , 'page': gb.page
       , 'selector': 'span'
-      //, 'filter': 'function(e){ return e.innerText.match(/dfgfsdsfgomdomgomoskmg/); }'
+      , 'filter': 'function(e){ return e.innerText.match(/dfgfsdsfgomdomgomoskmg/); }'
       }
     , 'json': true
     }, function(err, res, body){
       test.ok(!err);
-console.log(body);
+      test.ok(body.error === 'timeout');
 
       log.profile(test_name);
       return test.done();
     });
-  }*/
+  }
+, 'getSelector - no filter': function(test){
+    var test_name = 'getSelector - filter, no filter';
+    log.debug(test_name);
+    log.profile(test_name);
+
+    return Request({
+      'url': 'http://localhost:' + gb.port + '/method'
+    , 'qs': {
+        'method': 'getSelector'
+      , 'page': gb.page
+      , 'selector': 'span'
+      }
+    , 'json': true
+    }, function(err, res, body){
+      test.ok(!err);
+      test.ok(!body.error);
+      test.ok(body.data.attr.innerHTML);
+
+      log.profile(test_name);
+      return test.done();
+    });
+  }
+, 'reloadURL 1': function(test){
+    var test_name = 'reloadURL 1';
+    log.debug(test_name);
+    log.profile(test_name);
+
+    return Request({
+      'url': 'http://localhost:' + gb.port + '/method'
+    , 'qs': {
+        'method': 'loadURL'
+      , 'page': gb.page
+      , 'url': 'https://wikipedia.org'
+      }
+    , 'json': true
+    }, function(err, res, body){
+      test.ok(!err);
+      test.ok(body.data.page_uuid === gb.page);
+
+      log.profile(test_name);
+      return test.done();
+    });
+  }
+, 'reloadURL 2': function(test){
+    var test_name = 'reloadURL 2';
+    log.debug(test_name);
+    log.profile(test_name);
+
+    return Request({
+      'url': 'http://localhost:' + gb.port + '/method'
+    , 'qs': {
+        'method': 'loadURL'
+      , 'page': gb.page
+      , 'url': 'https://facebook.com'
+      , 'immediate': true
+      }
+    , 'json': true
+    }, function(err, res, body){
+      test.ok(!err);
+      test.ok(body.data.page_uuid === gb.page);
+
+      log.profile(test_name);
+      return test.done();
+    });
+  }
+, 'getSelector - concurrently': function(test){
+    var test_name = 'getSelector - concurrently';
+    log.debug(test_name);
+    log.profile(test_name);
+
+    var acb = _.after(2, function(){
+      log.profile(test_name);
+      return test.done();
+    });
+
+    Request({
+      'url': 'http://localhost:' + gb.port + '/method'
+    , 'qs': {
+        'method': 'getSelector'
+      , 'page': gb.page
+      , 'filter': 'function(e){ return e.innerText.match(/See photos/); }'
+      , 'selector': 'span'
+      }
+    , 'json': true
+    }, function(err, res, body){
+      test.ok(!err);
+      test.ok(!body.error);
+      test.ok(body.data.attr.innerHTML.match(/photos/));
+
+      acb();
+    });
+
+    Request({
+      'url': 'http://localhost:' + gb.port + '/method'
+    , 'qs': {
+        'method': 'getSelector'
+      , 'page': gb.page
+      , 'selector': '*'
+      , 'filter': 'function(e){ return e.innerText.match(/free and always will be\\.$/); }'
+      }
+    , 'json': true
+    }, function(err, res, body){
+      test.ok(!err);
+      test.ok(body.data.attr.innerText.match(/always/));
+
+      acb();
+    });
+  }
+, 'getSelector - transformer': function(test){
+    var test_name = 'getSelector - transformer';
+    log.debug(test_name);
+    log.profile(test_name);
+
+    return Request({
+      'url': 'http://localhost:' + gb.port + '/method'
+    , 'qs': {
+        'method': 'getSelector'
+      , 'page': gb.page
+      , 'selector': 'span'
+      , 'multiple': true
+      , 'transformer': 'function(e){ return e.el.innerText; }'
+      }
+    , 'json': true
+    }, function(err, res, body){
+      test.ok(!err);
+      test.ok(!body.error);
+      test.ok(_.isString(body.data['1']));
+
+      log.profile(test_name);
+      return test.done();
+    });
+  }
+, 'kill_server': function(test){
+    var test_name = 'kill_server';
+    log.debug(test_name);
+    log.profile(test_name);
+
+    Belt.get(gb, 'server.kill()');
+
+    log.profile(test_name);
+    return test.done();
+  }
 };

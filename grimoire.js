@@ -116,7 +116,6 @@ var Grimoire = function(O){
     , 'onClosing'
     , 'onConfirm'
     , 'onConsoleMessage'
-    , 'onError'
     , 'onFilePicker'
     , 'onInitialized'
     , 'onLoadFinished'
@@ -149,8 +148,10 @@ var Grimoire = function(O){
     if (a.o.verbose){
       _.each(events, function(e){
         a.o.page.listeners[e]['verbose'] = function(){
-          console.log(e);
-          console.log(Belt.stringify(arguments));
+          try {
+            console.log(e);
+            console.log(Belt.stringify(arguments));
+          } catch(e2) {}
         };
       });
     }
@@ -251,8 +252,8 @@ var Grimoire = function(O){
           return ocb(new Error('timeout'));
         }, a.o.timeout);
 
-        a.o.page.listeners.onCallback[a.o.uuid] = function(err, sel, uuid){
-          if (uuid !== a.o.uuid) return;
+        a.o.page.listeners.onCallback[a.o.uuid] = function(err, sel, suuid, uuid){
+          if (suuid !== a.o.uuid || uuid !== a.o.uuid) return;
 
           return ocb(undefined, sel);
         };
@@ -267,7 +268,7 @@ var Grimoire = function(O){
         var evaluator = function(){
           if (a.o.verbose) console.log('[selector check]');
 
-          return a.o.page.evaluateAsync(function(o){
+          a.o.page.evaluate(function(o, u){
             var els = document.documentElement.querySelectorAll(o.selector);
 
             if (!els || !els[0]) return;
@@ -316,9 +317,11 @@ var Grimoire = function(O){
 
             if (!o.count && !o.multiple) sels = sels.shift();
 
-            return window.callPhantom(null, sels);
+            if (!sels) return;
 
-          }, 0, _.omit(a.o, ['page']));
+            return window.callPhantom(null, sels, o.uuid);
+
+          }, _.omit(a.o, ['page']));
         };
 
         gb['interval'] = setInterval(function(){
