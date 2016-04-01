@@ -282,7 +282,8 @@ var Grimoire = function(O){
 
             //filtering
             for (var i = 0; i < els.length; i++){
-              if (o.content && !els[i].innerText.match(o.content)) continue; //content mismatch
+              if (o.content && !((els[i].innerText || '').match(o.content))
+              && !((els[i].value || '').match(o.content))) continue; //content mismatch
               if (o.filter && !o.filter(els[i], els, o)) continue; //filter mismatch
 
               cur = els[i].getBoundingClientRect();
