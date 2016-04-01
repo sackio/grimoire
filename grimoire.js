@@ -340,7 +340,10 @@ var Grimoire = function(O){
       //page
       //rect
       //pause
-      'path': '/tmp/' + Belt.uuid() + '.jpg' //tempfile
+      'image_path': '/tmp/' + Belt.uuid() + '.jpg' //tempfile
+    , 'json_path': '/tmp/' + Belt.uuid() + '.json' //tempfile
+    , 'remove_image': true
+    , 'remove_json': true
     });
     var gb = {};
     return Async.waterfall([
@@ -348,10 +351,8 @@ var Grimoire = function(O){
         if (!a.o.page) return cb(new Error('page is required'));
   
         if (a.o.rect) a.o.page.clipRect = a.o.rect; //clipping rectangle
-  
-        if (a.o.path) a.o.page.render(a.o.path, {format: 'jpeg', quality: '100'});
-  
-        _.extend(gb, _.pick(a.o.page, [
+
+        _.extend(gb, _.pick(a.o, ['image_path', 'json_path']), _.pick(a.o.page, [
           'cookies'
         , 'focusedFrameName'
         , 'offlineStoragePath'
@@ -376,16 +377,25 @@ var Grimoire = function(O){
         });
   
         a.o.page.switchToFrame(gb.focusedFrameName);
-  
+
+        if (a.o.image_path) a.o.page.render(a.o.image_path, {format: 'jpeg', quality: '100'});
+        if (a.o.json_path) FS.write(a.o.json_path, Belt.stringify(gb), 'w');
+
         return cb();
       }
     , function(cb){
         if (!a.o.pause) return cb();
 
-        //open eog and wait until file is closed to return
-        return CP.spawn('eog', [a.o.path]).on('exit', function(){
-          FS.remove(a.o.path);
-          return cb();
+        var acb = _.after(cb, 2);
+
+        CP.spawn('gedit', [a.o.json_path]).on('exit', function(){
+          if (a.o.remove_json) FS.remove(a.o.json_path);
+          return acb();
+        });
+
+        CP.spawn('eog', [a.o.image_path]).on('exit', function(){
+          if (a.o.remove_image) FS.remove(a.o.image_path);
+          return acb();
         });
       }
     ], function(err){
