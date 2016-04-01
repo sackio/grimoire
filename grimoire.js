@@ -200,7 +200,7 @@ var Grimoire = function(O){
 
       a.o.page.listeners.onLoadFinished[uuid] = _.throttle(function(status){
         delete a.o.page.listeners.onLoadFinished[uuid];
-        return ocb(undefined, a.o.page);
+        return ocb(undefined, a.o.page, status);
       }, a.o.wait, {'leading': false});
     }
 
