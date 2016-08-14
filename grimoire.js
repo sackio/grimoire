@@ -64,7 +64,7 @@ var Grimoire = function(O){
       pos++;
     }
     query = url.substr(pos);
-  
+
     var result = {};
     query.split("&").forEach(function(part) {
       if(!part) return;
@@ -96,7 +96,7 @@ var Grimoire = function(O){
     , 'user_agent': _.sample(self.UserAgents)
     , 'viewport': {'width': 2048, 'height': 16000}
     });
-  
+
     if (a.o.verbose) console.log('Creating page...');
 
     a.o.page.settings.userAgent = a.o.user_agent;
@@ -161,7 +161,7 @@ var Grimoire = function(O){
 
     return a.o.page;
   };
-  
+
   M['loadURL'] = function(options, callback){
     var a = Belt.argulint(arguments)
       , self = this;
@@ -175,7 +175,7 @@ var Grimoire = function(O){
 
     var ocb = _.once(function(err, page){
       if (!Belt.isNull(a.o.timeout) && timeout) clearTimeout(timeout);
-  
+
       if (err){
         if (a.o.verbose) console.log(err);
       } else {
@@ -204,6 +204,33 @@ var Grimoire = function(O){
       }, a.o.wait, {'leading': false});
     }
 
+    if (a.o.log_resources){
+      a.o.page['resources_requested'] = [];
+      a.o.page['resources_received'] = [];
+      a.o.page['resources_error'] = [];
+      a.o.page['resources_timeout'] = [];
+
+      a.o.page.listeners.onResourceRequested[Belt.uuid()] = function(data){
+        a.o.page.resources_requested.push(data);
+      };
+
+      a.o.page.listeners.onResourceReceived[Belt.uuid()] = function(data){
+        a.o.page.resources_received.push(data);
+      };
+
+      a.o.page.listeners.onResourceError[Belt.uuid()] = function(data){
+        a.o.page.resources_error.push(data);
+      };
+
+      a.o.page.listeners.onResourceRequested[Belt.uuid()] = function(data){
+        a.o.page.resources_requested.push(data);
+      };
+
+      a.o.page.listeners.onResourceTimeout[Belt.uuid()] = function(data){
+        a.o.page.resources_timeout.push(data);
+      };
+    }
+
     if (a.o.verbose) console.log('Loading URL [' + a.o.url + ']...');
     if (a.o.url) a.o.page.open(a.o.url);
 
@@ -212,7 +239,7 @@ var Grimoire = function(O){
 
     return a.o.page;
   };
-  
+
   M['getSelector'] = function(options, callback){
     var a = Belt.argulint(arguments)
       , self = this;
@@ -350,7 +377,7 @@ var Grimoire = function(O){
     return Async.waterfall([
       function(cb){
         if (!a.o.page) return cb(new Error('page is required'));
-  
+
         if (a.o.rect) a.o.page.clipRect = a.o.rect; //clipping rectangle
 
         _.extend(gb, _.pick(a.o, ['image_path', 'json_path']), _.pick(a.o.page, [
@@ -364,7 +391,7 @@ var Grimoire = function(O){
         ]), {
           'frames': _.object(a.o.page.framesName, _.map(a.o.page.framesName, function(f){
             a.o.page.switchToFrame(f);
-  
+
             return _.pick(a.o.page, [
               'cookies'
             , 'focusedFrameName'
@@ -376,7 +403,7 @@ var Grimoire = function(O){
             ]);
           }))
         });
-  
+
         a.o.page.switchToFrame(gb.focusedFrameName);
 
         if (a.o.image_path) a.o.page.render(a.o.image_path, {format: 'jpeg', quality: '100'});
@@ -403,7 +430,7 @@ var Grimoire = function(O){
       return a.cb(err, gb);
     });
   };
-  
+
 ////////////////////////////////////////////////////////////////////////////////
 ////SERVER                                                                  ////
 ////////////////////////////////////////////////////////////////////////////////
@@ -414,7 +441,7 @@ var Grimoire = function(O){
     a.o = _.defaults(a.o, {
       //port
     });
-  
+
     self['server'] = Server.create();
     self['service'] = self.server.listen(a.o.port, function(req, res){
       var query = self.getJSONFromURL(req.url);
@@ -478,9 +505,9 @@ var Grimoire = function(O){
         }
       }
     });
-  
+
     console.log('Server running on ' + a.o.port);
-  
+
     return a.cb();
   };
 
@@ -495,7 +522,7 @@ var Grimoire = function(O){
     var a = Belt.argulint(arguments)
       , self = this;
     a.o = _.defaults(a.o, {
-    
+
     });
 
     self['Args'] = self.Args || {};
@@ -516,9 +543,9 @@ var Grimoire = function(O){
 
       if (a.o.verbose && err) console.log(err.message);
       if (a.o.verbose && arguments.length > 1) console.log(Belt.stringify(arguments));
-    
+
       if (self.server) self.server.close();
-    
+
       return Phantom.exit(err ? 1 : 0);
     });
   };

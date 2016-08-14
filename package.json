@@ -1,7 +1,7 @@
 {
   "name": "grimoire",
   "description": "framework for phantomjs",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "author": {
     "name": "Ben Sack",
     "email": "ben@sack.io"
