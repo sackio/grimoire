@@ -252,12 +252,40 @@ var Grimoire = function(O){
       //count
       //filter
       //transformer
+      //negate
       'repeat_interval': 100
     , 'timeout': 10000
     , 'uuid': Belt.uuid()
     });
 
     var gb = {};
+
+    /*
+      wait for selector test to fail
+    */
+    if (a.o.negate){
+      var ocb = _.once(a.cb);
+
+      gb['timeout'] = setTimeout(function(){
+        ocb(new Error('Timeout waiting for selector to disappear'));
+      }, a.o.timeout);
+
+      gb['continue'] = true;
+      return Async.doWhilst(function(next){
+        return self.getSelector(_.extend({}, a.o, {
+          'negate': false
+        , 'timeout': a.o.repeat_interval + 200
+        }), function(err, sel){
+          if (err || !sel) gb.continue = false;
+
+          return next();
+        });
+      }, function(){ return gb.continue; }, function(err){
+        if (gb.timeout) clearTimeout(gb.timeout);
+        return ocb();
+      });
+    }
+
     return Async.waterfall([
       function(cb){
         var ocb = _.once(function(err, selector){
