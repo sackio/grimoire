@@ -274,7 +274,7 @@ var Grimoire = function(O){
       return Async.doWhilst(function(next){
         return self.getSelector(_.extend({}, a.o, {
           'negate': false
-        , 'timeout': a.o.repeat_interval + 200
+        , 'timeout': a.o.repeat_interval + 400
         }), function(err, sel){
           if (err || !sel) gb.continue = false;
 
@@ -282,7 +282,7 @@ var Grimoire = function(O){
         });
       }, function(){ return gb.continue; }, function(err){
         if (gb.timeout) clearTimeout(gb.timeout);
-        return ocb();
+        return ocb(err);
       });
     }
 
@@ -304,10 +304,16 @@ var Grimoire = function(O){
         });
 
         gb['timeout'] = setTimeout(function(){
+          gb['timed_out'] = true;
+
           return ocb(new Error('timeout'));
         }, a.o.timeout);
 
         a.o.page.listeners.onCallback[a.o.uuid] = function(err, sel, suuid, uuid){
+          if (gb.timed_out){
+            delete a.o.page.listeners.onCallback[a.o.uuid];
+            return;
+          }
           if (suuid !== a.o.uuid || uuid !== a.o.uuid) return;
 
           return ocb(undefined, sel);
@@ -321,6 +327,8 @@ var Grimoire = function(O){
         if (a.o.transformer) a.o.transformer = Belt.cast(a.o.transformer, 'string');
 
         var evaluator = function(){
+          if (gb.timed_out) return;
+
           if (a.o.verbose) console.log('[selector check]');
 
           a.o.page.evaluate(function(o, u){
