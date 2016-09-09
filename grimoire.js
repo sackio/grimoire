@@ -332,64 +332,65 @@ var Grimoire = function(O){
           if (a.o.verbose) console.log('[selector check]');
 
           a.o.page.evaluate(function(o, u){
-            var els = document.documentElement.querySelectorAll(o.selector);
+            try{
+              var els = document.documentElement.querySelectorAll(o.selector);
 
-            if (!els || !els[0]) return;
-            if (o.count && els.length < o.count) return;
+              if (!els || !els[0]) return;
+              if (o.count && els.length < o.count) return;
 
-            var sels = [], cur;
+              var sels = [], cur;
 
-            if (o.content) o.content = new RegExp(o.content, o.content_options);
-            if (o.filter) eval('o.filter = ' + o.filter);
-            if (o.transformer) eval('o.transformer = ' + o.transformer);
+              if (o.content) o.content = new RegExp(o.content, o.content_options);
+              if (o.filter) eval('o.filter = ' + o.filter);
+              if (o.transformer) eval('o.transformer = ' + o.transformer);
 
-            //filtering
-            for (var i = 0; i < els.length; i++){
-              if (o.content && !((els[i].innerText || '').match(o.content))
-              && !((els[i].value || '').match(o.content))) continue; //content mismatch
-              if (o.filter && !o.filter(els[i], els, o)) continue; //filter mismatch
+              //filtering
+              for (var i = 0; i < els.length; i++){
+                if (o.content && !((els[i].innerText || '').match(o.content))
+                && !((els[i].value || '').match(o.content))) continue; //content mismatch
+                if (o.filter && !o.filter(els[i], els, o)) continue; //filter mismatch
 
-              cur = els[i].getBoundingClientRect();
-              if (o.visible && !cur.top && !cur.left && !cur.width && !cur.height) continue; //not visible
+                cur = els[i].getBoundingClientRect();
+                if (o.visible && !cur.top && !cur.left && !cur.width && !cur.height) continue; //not visible
 
-              cur['x'] = (cur.left || 0) + ((cur.width || 0) / 2);
-              cur['y'] = (cur.top || 0) + ((cur.height || 0) / 2);
+                cur['x'] = (cur.left || 0) + ((cur.width || 0) / 2);
+                cur['y'] = (cur.top || 0) + ((cur.height || 0) / 2);
 
-              sels.push({
-                'el': els[i]
-              , 'rect': cur
-              , 'attr': {
-                  'innerText': els[i].innerText
-                , 'innerHTML': els[i].innerHTML
-                , 'outerHTML': els[i].outerHTML
-                , 'value': els[i].value
-                }
+                sels.push({
+                  'el': els[i]
+                , 'rect': cur
+                , 'attr': {
+                    'innerText': els[i].innerText
+                  , 'innerHTML': els[i].innerHTML
+                  , 'outerHTML': els[i].outerHTML
+                  , 'value': els[i].value
+                  }
+                });
+
+                if (!o.count && !o.multiple) break; //single element is fine
+              }
+
+              if (o.count && sels.length < o.count) return;
+
+              if (o.transformer) sels.forEach(function(e, i){
+                return sels[i] = o.transformer(e, sels, o, i);
               });
 
-              if (!o.count && !o.multiple) break; //single element is fine
-            }
+              sels.forEach(function(e, i){
+                delete e.el;
+              });
 
-            if (o.count && sels.length < o.count) return;
+              if (!o.count && !o.multiple) sels = sels.shift();
 
-            if (o.transformer) sels.forEach(function(e, i){
-              return sels[i] = o.transformer(e, sels, o, i);
-            });
+              if (!sels) return;
 
-            sels.forEach(function(e, i){
-              delete e.el;
-            });
-
-            if (!o.count && !o.multiple) sels = sels.shift();
-
-            if (!sels) return;
-
-            return window.callPhantom(null, sels, o.uuid);
-
+              return window.callPhantom(null, sels, o.uuid);
+            } catch(e){}
           }, _.omit(a.o, ['page']));
         };
 
         gb['interval'] = setInterval(function(){
-          return evaluator();
+          return _.defer(evaluator);
         }, a.o.interval);
 
         return evaluator();
@@ -408,12 +409,14 @@ var Grimoire = function(O){
     , 'json_path': '/tmp/' + Belt.uuid() + '.json' //tempfile
     , 'remove_image': true
     , 'remove_json': true
+    , 'clip_visible': true
     });
     var gb = {};
     return Async.waterfall([
       function(cb){
         if (!a.o.page) return cb(new Error('page is required'));
 
+        if (a.o.clip_visible && !a.o.rect) a.o.rect = a.o.page.evaluate(function(){ return document.documentElement.getBoundingClientRect(); });
         if (a.o.rect) a.o.page.clipRect = a.o.rect; //clipping rectangle
 
         _.extend(gb, _.pick(a.o, ['image_path', 'json_path']), _.pick(a.o.page, [
