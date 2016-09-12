@@ -411,16 +411,17 @@ var Grimoire = function(O){
       //return_image
       'image_path': '/tmp/' + Belt.uuid() + '.jpg' //tempfile
     , 'json_path': '/tmp/' + Belt.uuid() + '.json' //tempfile
-    , 'remove_image': true
-    , 'remove_json': true
-    , 'render_buffer': true
+    , 'remove_image': false
+    , 'remove_json': false
     , 'clip_visible': true
+    , 'child_frames': false
     });
     var gb = {};
     return Async.waterfall([
       function(cb){
         if (!a.o.page) return cb(new Error('page is required'));
 
+        var old_rect = a.o.page.clipRect;
         if (a.o.clip_visible && !a.o.rect) a.o.rect = a.o.page.evaluate(function(){ return document.documentElement.getBoundingClientRect(); });
         if (a.o.rect) a.o.page.clipRect = a.o.rect; //clipping rectangle
 
@@ -432,7 +433,7 @@ var Grimoire = function(O){
         , 'url'
         , 'windowName'
         , 'title'
-        ]), {
+        ]), a.o.child_frames ? {
           'frames': _.object(a.o.page.framesName, _.map(a.o.page.framesName, function(f){
             a.o.page.switchToFrame(f);
 
@@ -446,13 +447,14 @@ var Grimoire = function(O){
             , 'title'
             ]);
           }))
-        });
+        } : {});
 
-        a.o.page.switchToFrame(gb.focusedFrameName);
+        if (gb.focusedFrameName) a.o.page.switchToFrame(gb.focusedFrameName);
 
         if (a.o.image_path) a.o.page.render(a.o.image_path, {format: 'jpeg', quality: '100'});
-        if (a.o.render_buffer) gb['buffer'] = a.o.page.renderBuffer('jpeg', '100');
         if (a.o.json_path) FS.write(a.o.json_path, Belt.stringify(gb), 'w');
+
+        a.o.page.clipRect = old_rect;
 
         return cb();
       }
@@ -529,7 +531,12 @@ var Grimoire = function(O){
 
               if (query.method === 'inspectPage' && query.return_image){
                 res.setHeader('Content-type', 'image/jpeg');
-                res.write(data.buffer);
+                res.setEncoding('binary');
+                var image = FS.open(opts.image_path, 'rb')
+                  , data = image.read();
+                image.close();
+                res.write(data);
+                res.closeGracefully();
               } else {
                 res.setHeader('Content-type', 'application/json');
                 res.write(JSON.stringify({
@@ -539,8 +546,8 @@ var Grimoire = function(O){
                   , 'response': data
                   }
                 }));
+                res.closeGracefully();
               }
-              res.closeGracefully();
             }
           });
         } catch(e){
