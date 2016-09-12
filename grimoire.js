@@ -408,10 +408,12 @@ var Grimoire = function(O){
       //page
       //rect
       //pause
+      //return_image
       'image_path': '/tmp/' + Belt.uuid() + '.jpg' //tempfile
     , 'json_path': '/tmp/' + Belt.uuid() + '.json' //tempfile
     , 'remove_image': true
     , 'remove_json': true
+    , 'render_buffer': true
     , 'clip_visible': true
     });
     var gb = {};
@@ -449,6 +451,7 @@ var Grimoire = function(O){
         a.o.page.switchToFrame(gb.focusedFrameName);
 
         if (a.o.image_path) a.o.page.render(a.o.image_path, {format: 'jpeg', quality: '100'});
+        if (a.o.render_buffer) gb['buffer'] = a.o.page.renderBuffer('jpeg', '100');
         if (a.o.json_path) FS.write(a.o.json_path, Belt.stringify(gb), 'w');
 
         return cb();
@@ -469,7 +472,7 @@ var Grimoire = function(O){
         });
       }
     ], function(err){
-      return a.cb(err, gb);
+      return a.cb(err, gb, a.o);
     });
   };
 
@@ -523,14 +526,20 @@ var Grimoire = function(O){
           return self[query.method](_.extend({}, O, self.Args, query, {'request': req, 'response': res}), function(err, data, opts){
             if (res && !query.defer){
               res.statusCode = 200;
-              res.setHeader('Content-type', 'application/json');
-              res.write(JSON.stringify({
-                'error': Belt.get(err, 'message')
-              , 'data': {
-                  'page_uuid': Belt.get(query, 'page.uuid') || Belt.get(opts, 'page.uuid')
-                , 'response': data
-                }
-              }));
+
+              if (query.method === 'inspectPage' && query.return_image){
+                res.setHeader('Content-type', 'image/jpeg');
+                res.write(data.buffer);
+              } else {
+                res.setHeader('Content-type', 'application/json');
+                res.write(JSON.stringify({
+                  'error': Belt.get(err, 'message')
+                , 'data': {
+                    'page_uuid': Belt.get(query, 'page.uuid') || Belt.get(opts, 'page.uuid')
+                  , 'response': data
+                  }
+                }));
+              }
               res.closeGracefully();
             }
           });
