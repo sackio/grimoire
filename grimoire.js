@@ -69,18 +69,21 @@ var Grimoire = function(O){
     query.split("&").forEach(function(part) {
       if(!part) return;
       var item = part.split("=");
-      var key = item[0];
+      var key = decodeURIComponent(decodeURIComponent(item[0]))
+        , value = decodeURIComponent(decodeURIComponent(item[1]));
+
       var from = key.indexOf("[");
-      if(from==-1) result[key] = decodeURIComponent(item[1]);
+      if(from==-1) result[key] = value;
       else {
         var to = key.indexOf("]");
         var index = key.substring(from+1,to);
         key = key.substring(0,from);
         if(!result[key]) result[key] = [];
-        if(!index) result[key].push(item[1]);
-        else result[key][index] = item[1];
+        if(!index) result[key].push(value);
+        else result[key][index] = value;
       }
     });
+
     return result;
   };
 
@@ -517,15 +520,16 @@ var Grimoire = function(O){
             return res.closeGracefully();
           }
 
-          return self[query.method](_.extend({}, O, self.Args, query, {'request': req, 'response': res}), function(err, data){
+          return self[query.method](_.extend({}, O, self.Args, query, {'request': req, 'response': res}), function(err, data, opts){
             if (res && !query.defer){
               res.statusCode = 200;
               res.setHeader('Content-type', 'application/json');
               res.write(JSON.stringify({
                 'error': Belt.get(err, 'message')
-              , 'data': _.extend({
-                  'page_uuid': Belt.get(query, 'page.uuid') || Belt.get(data, 'uuid')
-                }, data || {})
+              , 'data': {
+                  'page_uuid': Belt.get(query, 'page.uuid') || Belt.get(opts, 'page.uuid')
+                , 'response': data
+                }
               }));
               res.closeGracefully();
             }
