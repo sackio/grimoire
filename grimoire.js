@@ -98,6 +98,7 @@ var Grimoire = function(O){
       'page': Webpage.create()
     , 'user_agent': _.sample(self.UserAgents)
     , 'viewport': {'width': 2048, 'height': 16000}
+    //ttl
     });
 
     if (a.o.verbose) console.log('Creating page...');
@@ -110,6 +111,17 @@ var Grimoire = function(O){
     a.o.page['uuid'] = uuid;
     self.Pages[uuid] = a.o.page;
 
+    a.o.page['destroy'] = function(){
+      Belt.delete(self, 'Pages.' + uuid);
+      Belt.get(a.o, 'page.close()');
+    };
+
+    if (a.o.ttl){
+      a.o.page['ttl_expiry'] = new Date().valueOf() + a.o.ttl;
+      a.o.page['ttl'] = setTimeout(function(){
+        Belt.get(a.o, 'page.destroy()');
+      }, a.o.ttl);
+    }
     /*
       event emitters
     */
