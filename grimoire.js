@@ -287,13 +287,19 @@ var Grimoire = function(O){
 
       gb['continue'] = true;
       return Async.doWhilst(function(next){
-        return self.getSelector(_.extend({}, a.o, {
+        return self.getSelector(_.extend({}, _.omit(a.o, [
+          'negate'
+        , 'timeout'
+        ]), {
           'negate': false
-        , 'timeout': a.o.repeat_interval + 400
+        , 'timeout': a.o.repeat_interval + 200
         }), function(err, sel){
-          if (err || !sel) gb.continue = false;
+          if (err || !sel){
+            gb.continue = false;
+            return next();
+          }
 
-          return next();
+          setTimeout(next, a.o.repeat_interval + 200);
         });
       }, function(){ return gb.continue; }, function(err){
         if (gb.timeout) clearTimeout(gb.timeout);
