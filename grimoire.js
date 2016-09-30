@@ -586,7 +586,7 @@ var Grimoire = function(O){
       }
     });
 
-    console.log('[' + System.args + '] Server running on ' + a.o.port);
+    console.log('[' + System.args[0] + '] Server running on ' + a.o.port);
 
     return a.cb();
   };
