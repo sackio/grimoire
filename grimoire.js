@@ -524,9 +524,18 @@ var Grimoire = function(O){
         if (!query.page){
           res.statusCode = 200;
           res.setHeader('Content-type', 'application/json');
-          res.write(JSON.stringify({
+
+          var json = {
             'error': 'page not found in registry'
-          }));
+          };
+
+          res.write(JSON.stringify(json));
+
+          if (a.o.server_verbose || a.o.verbose){
+            console.log('server response: [' + req.url + ']');
+            console.log(Belt.stringify(json));
+          }
+
           return res.closeGracefully();
         }
       }
@@ -540,9 +549,17 @@ var Grimoire = function(O){
           if (!self[query.method]){
             res.statusCode = 200;
             res.setHeader('Content-type', 'application/json');
-            res.write(JSON.stringify({
+
+            var json = {
               'error': 'method not found'
-            }));
+            };
+
+            if (a.o.server_verbose || a.o.verbose){
+              console.log('server response: [' + req.url + ']');
+              console.log(Belt.stringify(json));
+            }
+
+            res.write(JSON.stringify(json));
             return res.closeGracefully();
           }
 
@@ -556,17 +573,30 @@ var Grimoire = function(O){
                 var image = FS.open(opts.image_path, 'rb')
                   , data = image.read();
                 image.close();
+
+                if (a.o.server_verbose || a.o.verbose){
+                  console.log('server response: [' + req.url + '] - sending file - ' + opts.image_path);
+                }
+
                 res.write(data);
                 res.closeGracefully();
               } else {
                 res.setHeader('Content-type', 'application/json');
-                res.write(JSON.stringify({
+
+                var json = {
                   'error': Belt.get(err, 'message')
                 , 'data': {
                     'page_uuid': Belt.get(query, 'page.uuid') || Belt.get(opts, 'page.uuid')
                   , 'response': data
                   }
-                }));
+                };
+
+                if (a.o.server_verbose || a.o.verbose){
+                  console.log('server response: [' + req.url + ']');
+                  console.log(Belt.stringify(json));
+                }
+
+                res.write(JSON.stringify(json));
                 res.closeGracefully();
               }
             }
@@ -576,9 +606,17 @@ var Grimoire = function(O){
             if (res){
               res.statusCode = 200;
               res.setHeader('Content-type', 'application/json');
-              res.write(JSON.stringify({
+
+              var json = {
                 'error': e.message
-              }));
+              };
+
+              if (a.o.server_verbose || a.o.verbose){
+                console.log('server response: [' + req.url + ']');
+                console.log(Belt.stringify(json));
+              }
+
+              res.write(JSON.stringify(json));
               res.closeGracefully();
             }
           } catch(e) {}
