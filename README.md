@@ -1,3 +1,3 @@
 # grimoire
 
-Framework for Phantomjs
+Framework for Phantomjs - more documentation to come
