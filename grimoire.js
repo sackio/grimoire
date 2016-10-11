@@ -651,7 +651,7 @@ var Grimoire = function(O){
       return self.Args[k] = _a.join('=');
     });
 
-    _.extend({}, a.o, self.Args);
+    _.extend(a.o, self.Args);
 
     return Async.eachSeries(_.keys(a.o), function(m, cb){
       if (!self[m]) return cb();
