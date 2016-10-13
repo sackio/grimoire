@@ -538,6 +538,8 @@ var Grimoire = function(O){
       //page
       'elements': []
     , 'click_margin': 5
+    , 'x_offset': 0
+    , 'y_offset': 0
     , 'move_delay': 0
     , 'delay': 0
     });
@@ -545,9 +547,9 @@ var Grimoire = function(O){
     if (a.o.element) a.o.elements.push(a.o.element);
 
     return Async.eachSeries(a.o.elements, function(e, cb2){
-      a.o.page.sendEvent('mousemove', e.rect.left + a.o.click_margin, e.rect.y);
+      a.o.page.sendEvent('mousemove', e.rect.left + a.o.click_margin + a.o.x_offset, e.rect.y + a.o.y_offset);
       setTimeout(function(){
-        a.o.page.sendEvent('click', e.rect.left + a.o.click_margin, e.rect.y);
+        a.o.page.sendEvent('click', e.rect.left + a.o.click_margin + a.o.x_offset, e.rect.y + a.o.y_offset);
         return setTimeout(cb2, a.o.delay);
       }, a.o.move_delay);
     }, function(err){
@@ -632,7 +634,8 @@ var Grimoire = function(O){
       , self = this;
     a.o = _.defaults(a.o, {
       //port
-      'server_verbose': true
+      'host': '/'
+    , 'server_verbose': true
     });
 
     self['server'] = Server.create();
@@ -712,6 +715,7 @@ var Grimoire = function(O){
                   'error': Belt.get(err, 'message')
                 , 'data': {
                     'page_uuid': Belt.get(query, 'page.uuid') || Belt.get(opts, 'page.uuid')
+                  , 'inspect_url': a.o.host + '/method?method=inspectPage&return_image=true&page=' + (Belt.get(query, 'page.uuid') || Belt.get(opts, 'page.uuid'))
                   , 'response': data
                   }
                 };
