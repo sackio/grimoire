@@ -498,6 +498,131 @@ var Grimoire = function(O){
     });
   };
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// ELEMENT ACTIONS
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+  M['elementClick'] = function(options, callback){
+    var a = Belt.argulint(arguments)
+      , self = this
+      , gb = {};
+    a.o = _.defaults(a.o, {
+      //element
+      //page
+      'elements': []
+    , 'x_offset': 0
+    , 'y_offset': 0
+    , 'move_delay': 0
+    , 'delay': 0
+    });
+
+    if (a.o.element) a.o.elements.push(a.o.element);
+
+    return Async.eachSeries(a.o.elements, function(e, cb2){
+      a.o.page.sendEvent('mousemove', e.rect.x + a.o.x_offset, e.rect.y + a.o.y_offset);
+      setTimeout(function(){
+        a.o.page.sendEvent('click', e.rect.x + a.o.x_offset, e.rect.y + a.o.y_offset);
+        return setTimeout(cb2, a.o.delay);
+      }, a.o.move_delay);
+    }, function(err){
+      return a.cb(err);
+    });
+  };
+
+  M['elementCheckboxClick'] = function(options, callback){
+    var a = Belt.argulint(arguments)
+      , self = this
+      , gb = {};
+    a.o = _.defaults(a.o, {
+      //element
+      //page
+      'elements': []
+    , 'click_margin': 5
+    , 'move_delay': 0
+    , 'delay': 0
+    });
+
+    if (a.o.element) a.o.elements.push(a.o.element);
+
+    return Async.eachSeries(a.o.elements, function(e, cb2){
+      a.o.page.sendEvent('mousemove', e.rect.left + a.o.click_margin, e.rect.y);
+      setTimeout(function(){
+        a.o.page.sendEvent('click', e.rect.left + a.o.click_margin, e.rect.y);
+        return setTimeout(cb2, a.o.delay);
+      }, a.o.move_delay);
+    }, function(err){
+      return a.cb(err);
+    });
+  };
+
+  M['elementEnterText'] = function(options, callback){
+    var a = Belt.argulint(arguments)
+      , self = this
+      , gb = {};
+    a.o = _.defaults(a.o, {
+      //element
+      //page
+      'elements': []
+    , 'text': []
+    , 'x_offset': 0
+    , 'y_offset': 0
+    , 'move_delay': 0
+    , 'click_delay': 0
+    , 'delay': 0
+    });
+
+    if (a.o.element) a.o.elements.push(a.o.element);
+
+    var count = 0;
+    return Async.eachSeries(a.o.elements, function(e, cb2){
+      a.o.page.sendEvent('mousemove', e.rect.x + a.o.x_offset, e.rect.y + a.o.y_offset);
+      setTimeout(function(){
+        a.o.page.sendEvent('click', e.rect.x + a.o.x_offset, e.rect.y + a.o.y_offset);
+        setTimeout(function(){
+          a.o.page.sendEvent('keypress', _.isArray(a.o.text) ? a.o.text[count] : a.o.text);
+          count++;
+          return setTimeout(cb2, a.o.delay);
+        }, a.o.click_delay);
+      }, a.o.move_delay);
+    }, function(err){
+      return a.cb(err);
+    });
+  };
+
+  M['elementSelectOption'] = function(options, callback){
+    var a = Belt.argulint(arguments)
+      , self = this
+      , gb = {};
+    a.o = _.defaults(a.o, {
+      //element
+      //page
+      //index
+      'x_offset': 0
+    , 'y_offset': 0
+    , 'move_delay': 0
+    , 'click_delay': 0
+    , 'scroll_delay': 0
+    , 'enter_delay': 0
+    });
+
+    a.o.page.sendEvent('mousemove', e.rect.x + a.o.x_offset, e.rect.y + a.o.y_offset);
+    setTimeout(function(){
+      a.o.page.sendEvent('click', e.rect.x + a.o.x_offset, e.rect.y + a.o.y_offset);
+
+      setTimeout(function(){
+        Async.timesSeries(a.o.index, function(i, cb){
+          a.o.page.sendEvent('keypress', 16777237);
+          setTimeout(cb, a.o.scroll_delay);
+        }, function(){
+          setTimeout(function(){
+            a.o.page.sendEvent('keypress', 16777221);
+            return a.cb();
+          }, a.o.enter_delay);
+        });
+      }, a.o.click_delay);
+    }, a.o.move_delay);
+  };
+
 ////////////////////////////////////////////////////////////////////////////////
 ////SERVER                                                                  ////
 ////////////////////////////////////////////////////////////////////////////////
