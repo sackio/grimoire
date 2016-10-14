@@ -51,11 +51,29 @@ Note that this script uses NPM to manage dependencies. Bower or no dependency ma
 
 Returns new page that was created
  
-**loadURL**(options, callback) - load a URL for a page, optionally waiting until all resources have loaded before invoking a callback
+**loadURL**(options, callback(error, page)) - load a URL for a page, optionally waiting until all resources have loaded before invoking a callback
   Options:
   * page - pass in the Phantom page to use
   * url - URL to load
   * immediate - if true, invoke callback as soon as URL begins to load, rather than waiting for all resources to load
   * timeout - time in ms to wait before passing an error to the callback, indicating the page never loaded
   
-
+**getSelector**(options, callback(error, result)) - find element or elements in the DOM, meeting different criteria and pass them to callback, or timeout if no such elements are found and pass error to callback.
+  Options:
+  * selector - CSS selector to look for
+  * content - look for elements including `innerText` that matches `content`, where content is a string, or stringified regex
+  * page - Phantom page to test
+  * visible - if true, only look for elements visible in the viewport (Note: some DOM elements do not have coordinates using the `getBoundingClientRect` method, and will not work with this option.)
+  * multiple - if true, return all elements fitting these criteria. Otherwise, return first one found in DOM.
+  * count - if set, invoke callback after `count` number of elements are found to match criteria
+  * filter - A function or stringified function that is used to filter elements based on whether function returns truthfully or falsy. Function is passed a DOM element as the only parameter. Note that this function is run the in the Javascript context of the browser page, no the Phantom context. It cannot include variables not otherwise available in the browser context.
+  * transformer - A function or stringified function that transforms the element passed to it. The element passed is actually a composed object including the following properties:
+    * el - the DOM element
+    * rect - `x`, `y`, `width`, and `height` of bounding rectange
+    * text - `innerText` of element
+    * outerHTML - `outerHtml` of element
+    
+    As with `filter`, this function is executed in the browser's Javascript context
+  * negate - invoke callback only after no elements pass the tests specified
+  * repeat_interval - pause between polling DOM for this number of ms (default: 100)
+  * timeout - timeout and pass error to callback after this amount of time in ms (default: 10000)
