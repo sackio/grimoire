@@ -10,3 +10,8 @@ Grimoire is a library that extends [Phantom.js](http://phantomjs.org) for develo
 
 * **Visual Debugging** - Grimoire adds ability to inspect an active browser session at any time, both with a full data dump of state and a visual rendering of the viewport.
 
+* **DOM Action Helpers** - utility methods for clicking on elements, and setting values on a page.
+
+### API Reference ###
+
+
