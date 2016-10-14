@@ -21,6 +21,21 @@ var Grimoire = function(O){
 
   };
 
+  if (typeof Webpage === 'undefined') Webpage = require('webpage');
+  if (typeof System === 'undefined') System = require('system');
+  if (typeof Phantom === 'undefined') Phantom = require('phantom');
+  if (typeof CP === 'undefined') CP = require('child_process');
+  if (typeof FS === 'undefined') FS = require('fs');
+  if (typeof Server === 'undefined') Server = require('webserver');
+
+  if (typeof Belt === 'undefined') throw new Error('jsBelt is required');
+  if (typeof _ === 'undefined') throw new Error('Underscore.js is required');
+  if (typeof moment === 'undefined') throw new Error('Moment.js is required');
+  if (typeof async === 'undefined') throw new Error('Async.js is required');
+
+  var Async = async
+    , Moment = moment;
+  
   //error handler
   Phantom.onError = function(msg, trace){
     console.log(msg);
