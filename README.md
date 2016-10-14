@@ -77,3 +77,17 @@ Returns new page that was created
   * negate - invoke callback only after no elements pass the tests specified
   * repeat_interval - pause between polling DOM for this number of ms (default: 100)
   * timeout - timeout and pass error to callback after this amount of time in ms (default: 10000)
+  
+**inspectPage**(options, callback) - debugging method used to visually inspect a page and log all page information, optionally pausing script execution
+
+**elementClick**(options, callback) - click on an element
+
+**elementClickCheckbox**(options, callback) - click on a checkbox element
+
+**elementEnterText**(options, callback) - enter text into an element
+
+**elementSelectOption**(options, callback) - choose option in select list
+
+**startServer**(options, callback) - start a webserver for this script, which provides an RPC API for invoking script methods via HTTP request
+
+**main**(options) - this method is called at the end of the script file to parse commandline arguments passed to the script and call methods at load
