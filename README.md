@@ -43,7 +43,7 @@ Note that this script uses NPM to manage dependencies. Bower or no dependency ma
 
 ### API Reference ###
 
-**createPage** - create a new Phantom page (essentially a new session). The page will include a `uuid` property which can be passed to the web server to retrieve this specific page/session at any point.
+**createPage**(options) - create a new Phantom page (essentially a new session). The page will include a `uuid` property which can be passed to the web server to retrieve this specific page/session at any point.
   Options:
   * user_agent - pass a specific user agent. Otherwise, the page picks a user agent from a list accessible at `UserAgents`
   * viewport: Optionally pass a viewport size object. i.e. `{'width': 2048, 'height': 16000}`.
@@ -51,4 +51,11 @@ Note that this script uses NPM to manage dependencies. Bower or no dependency ma
 
 Returns new page that was created
  
+**loadURL**(options, callback) - load a URL for a page, optionally waiting until all resources have loaded before invoking a callback
+  Options:
+  * page - pass in the Phantom page to use
+  * url - URL to load
+  * immediate - if true, invoke callback as soon as URL begins to load, rather than waiting for all resources to load
+  * timeout - time in ms to wait before passing an error to the callback, indicating the page never loaded
+  
 
