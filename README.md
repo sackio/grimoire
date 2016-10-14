@@ -37,9 +37,18 @@ var M = {}
 Phantom.injectJs('../node_modules/grimoire/grimoire.js');
 M = Grimoire.call(M);
 ```
-Note that this script uses NPM to manage dependencies. Bower or no dependency manager would be fine as well.
+Note that this script uses NPM to manage dependencies. Bower or no dependency manager would be fine as well. After this setup code, add any script-specific code. 
 
+`M` basically represents a singleton instance of the module. It has inherited all the extensions Grimoire provides.
 
 ### API Reference ###
 
-**createPage** 
+**createPage** - create a new Phantom page (essentially a new session). The page will include a `uuid` property which can be passed to the web server to retrieve this specific page/session at any point.
+  Options:
+    * user_agent - pass a specific user agent. Otherwise, the page picks a user agent from a list accessible at `UserAgents`
+    * viewport: Optionally pass a viewport size object. i.e. `{'width': 2048, 'height': 16000}`.
+    * ttl: Set a time to live in ms for the page. If set, page will close automatically after this amount of time has passed.
+
+Returns new page that was created
+ 
+
