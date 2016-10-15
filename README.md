@@ -79,10 +79,33 @@ Returns new page that was created
   * timeout - timeout and pass error to callback after this amount of time in ms (default: 10000)
   
 **inspectPage**(options, callback) - debugging method used to visually inspect a page and log all page information, optionally pausing script execution
+  Options
+  
+  * page - page to inspect
+  * rect - specific rectange to render on inspection (default: entire viewport)
+  * image_path - path to save JPEG rendering of page to (default: temp path)
+  * json_path - path to save JSON dump of page content / data (default: temp path)
+  * pause - if true, pause invoking callback before image viewer is closed
+  * return_image - if true, return `image_path` at from function
 
-**elementClick**(options, callback) - click on an element
+**elementClick**(options, callback) - click on an element on the page. This method should be passed an `element` object from the `getSelector` method.
+  Options
+  
+  * element - objects passed to the callback of a `getSelector` method, must have a `rect` property that conveys the bounding rectangle
+    * x - x centroid-coordinate within the viewport
+    * y - y centroid-coordinate within the viewport
+    * width - width of bounding rectangle
+    * height - height of bounding rectangle
+    * top - top of bounding rectangle
+  * elements - 
+  * page
+      'elements': []
+    , 'x_offset': 0
+    , 'y_offset': 0
+    , 'move_delay': 0
+    , 'delay': 0
 
-**elementClickCheckbox**(options, callback) - click on a checkbox element
+**elementClickCheckbox**(options, callback) - click on a checkbox element on the page. Checkboxes are a little tricky as they do not have dimensions in the `getBoundingClientRect` method. This method should be passed an `element` object from the `getSelector` method, which is usually the immediate parent of the checkbox DOM element itself.
 
 **elementEnterText**(options, callback) - enter text into an element
 
