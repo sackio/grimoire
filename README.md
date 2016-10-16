@@ -97,13 +97,12 @@ Returns new page that was created
     * width - width of bounding rectangle
     * height - height of bounding rectangle
     * top - top of bounding rectangle
-  * elements - 
-  * page
-      'elements': []
-    , 'x_offset': 0
-    , 'y_offset': 0
-    , 'move_delay': 0
-    , 'delay': 0
+  * elements - optional, array of elements, all of which will be clicked.
+  * page - page containing element(s)
+  * x_offset - by default, the centroid of the element is clicked. Adjusting `x_offset` shifts the x-coordinate of the specific point clicked
+  * y_offset - by default, the centroid of the element is clicked. Adjusting `y_offset` shifts the y-coordinate of the specific point clicked
+  * move_delay - the delay between moving the mouse to a given point and clicking on the point in ms (default: 0)
+  * delay - the delay between clicking on an element and invoking the callback. If multiple elements are passed to the method, this delay is invoked between each element click (default: 0)
 
 **elementClickCheckbox**(options, callback) - click on a checkbox element on the page. Checkboxes are a little tricky as they do not have dimensions in the `getBoundingClientRect` method. This method should be passed an `element` object from the `getSelector` method, which is usually the immediate parent of the checkbox DOM element itself.
 
