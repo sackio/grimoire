@@ -105,11 +105,40 @@ Returns new page that was created
   * delay - the delay between clicking on an element and invoking the callback. If multiple elements are passed to the method, this delay is invoked between each element click (default: 0)
 
 **elementClickCheckbox**(options, callback) - click on a checkbox element on the page. Checkboxes are a little tricky as they do not have dimensions in the `getBoundingClientRect` method. This method should be passed an `element` object from the `getSelector` method, which is usually the immediate parent of the checkbox DOM element itself.
+  Options
 
+  * element - objects passed to the callback of a `getSelector` method, must have a `rect` property that conveys the bounding rectangle
+    * x - x centroid-coordinate within the viewport
+    * y - y centroid-coordinate within the viewport
+    * width - width of bounding rectangle
+    * height - height of bounding rectangle
+    * top - top of bounding rectangle
+  * elements - optional, array of elements, all of which will be clicked.
+  * page - page containing element(s)
+  * x_offset - by default, the left side of the element's x-axis is clicked. Adjusting `x_offset` shifts the x-coordinate of the specific point clicked
+  * y_offset - by default, the centroid of the element's y-axis is clicked. Adjusting `y_offset` shifts the y-coordinate of the specific point clicked
+  * move_delay - the delay between moving the mouse to a given point and clicking on the point in ms (default: 0)
+  * delay - the delay between clicking on an element and invoking the callback. If multiple elements are passed to the method, this delay is invoked between each element click (default: 0)
+  * click_margin - the offset to the right to click, in order to hit the checkbox element itself (default: 5)
+  
 **elementEnterText**(options, callback) - enter text into an element
 
 **elementSelectOption**(options, callback) - choose option in select list
 
 **startServer**(options, callback) - start a webserver for this script, which provides an RPC API for invoking script methods via HTTP request
 
-**main**(options) - this method is called at the end of the script file to parse commandline arguments passed to the script and call methods at load
+**main**(options) - this method is called at the end of the script file to parse commandline arguments passed to the script and call methods at load. This method reads in command line arguments and parses matching the pattern `--key=value`. Passing an argument with the name of another method in the script will cause this method to be executed, passing in any command line arguments as options. For example, a command line call of:
+
+```bash
+phantomjs somescript.js --startServer --port=5555 --host="http://localhost" --something=else
+```
+
+will execute the `startServer` method, passing in the following arguments (note: all command line arguments are passed as string values):
+
+```javascript
+{
+  'port': '5555'
+, 'host': 'http://localhost'
+, 'something': 'else'
+}
+```
