@@ -132,13 +132,13 @@ Returns new page that was created
   * port - port to listen on
   * host - accessible host for webserver. This is used to construct a debugging url for each request
   
-  Usage
+Usage
   
-  The webserver method converts standalone scripts into modules capable of robust interprocess communication. To execute a method in the script remotely, make a request to `/method?method=name-of-method&other_args=....`. For example, if the script includes a method called `clickRow` which requires an `index` argument to specify the row, requesting `/method?method=clickRow&index=5` will execute the `clickRow` method on the row with `index` 5.
+The webserver method converts standalone scripts into modules capable of robust interprocess communication. To execute a method in the script remotely, make a request to `/method?method=name-of-method&other_args=....`. For example, if the script includes a method called `clickRow` which requires an `index` argument to specify the row, requesting `/method?method=clickRow&index=5` will execute the `clickRow` method on the row with `index` 5.
   
-  Web requests will return a JSON object which includes an `error` key (including the message if any error occurred, and a `data` key, containing the results of the method. The `data` object will include `page_uuid` with a unique identifier for the page created or used with the given method execution. In future requests, this same UUID can be passed as `page=[uuid]` to retrieve an existing page in executing a given method. In this way, the webserver allows for session-style design patterns, where multiple methods can be executed over time on the same page, with multiple pages being managed by the same script at once.
+Web requests will return a JSON object which includes an `error` key (including the message if any error occurred, and a `data` key, containing the results of the method. The `data` object will include `page_uuid` with a unique identifier for the page created or used with the given method execution. In future requests, this same UUID can be passed as `page=[uuid]` to retrieve an existing page in executing a given method. In this way, the webserver allows for session-style design patterns, where multiple methods can be executed over time on the same page, with multiple pages being managed by the same script at once.
   
-  Additionally, responses will include an `inspect_url` parameters, with a URL to inspect a specified page visually. When this endpoint is requested, an image is created with the specified page and returned as the response. This is useful in debugging script behavior.
+Additionally, responses will include an `inspect_url` parameters, with a URL to inspect a specified page visually. When this endpoint is requested, an image is created with the specified page and returned as the response. This is useful in debugging script behavior.
   
 **main**(options) - this method is called at the end of the script file to parse commandline arguments passed to the script and call methods at load. This method reads in command line arguments and parses matching the pattern `--key=value`. Passing an argument with the name of another method in the script will cause this method to be executed, passing in any command line arguments as options. For example, a command line call of:
 
