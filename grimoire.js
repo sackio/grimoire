@@ -21,6 +21,21 @@ var Grimoire = function(O){
 
   };
 
+  if (typeof Webpage === 'undefined') Webpage = require('webpage');
+  if (typeof System === 'undefined') System = require('system');
+  if (typeof Phantom === 'undefined') Phantom = require('phantom');
+  if (typeof CP === 'undefined') CP = require('child_process');
+  if (typeof FS === 'undefined') FS = require('fs');
+  if (typeof Server === 'undefined') Server = require('webserver');
+
+  if (typeof Belt === 'undefined') throw new Error('jsBelt is required');
+  if (typeof _ === 'undefined') throw new Error('Underscore.js is required');
+  if (typeof moment === 'undefined') throw new Error('Moment.js is required');
+  if (typeof async === 'undefined') throw new Error('Async.js is required');
+
+  var Async = async
+    , Moment = moment;
+
   //error handler
   Phantom.onError = function(msg, trace){
     console.log(msg);
@@ -436,6 +451,9 @@ var Grimoire = function(O){
     , 'clip_visible': true
     , 'child_frames': false
     });
+
+    a.o.clip_visible = Belt.cast(a.o.clip_visible, 'boolean');
+
     var gb = {};
     return Async.waterfall([
       function(cb){
@@ -715,7 +733,8 @@ var Grimoire = function(O){
                   'error': Belt.get(err, 'message')
                 , 'data': {
                     'page_uuid': Belt.get(query, 'page.uuid') || Belt.get(opts, 'page.uuid')
-                  , 'inspect_url': a.o.host + '/method?method=inspectPage&return_image=true&page=' + (Belt.get(query, 'page.uuid') || Belt.get(opts, 'page.uuid'))
+                  , 'inspect_url': a.o.host + '/method?method=inspectPage&return_image=true&page=' + encodeURIComponent(Belt.get(query, 'page.uuid') || Belt.get(opts, 'page.uuid'))
+                  , 'inspect_url_unclipped': a.o.host + '/method?method=inspectPage&clip_visible=false&return_image=true&page=' + encodeURIComponent(Belt.get(query, 'page.uuid') || Belt.get(opts, 'page.uuid'))
                   , 'response': data
                   }
                 };
