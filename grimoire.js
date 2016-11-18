@@ -393,6 +393,14 @@ var Grimoire = function(O){
                   cur['x'] = (cur.left || 0) + ((cur.width || 0) / 2);
                   cur['y'] = (cur.top || 0) + ((cur.height || 0) / 2);
 
+                  var el_opts;
+                  if (els[i].options){
+                    el_opts = [];
+                    for (var m = 0; m < els[i].options.length; m++){
+                      el_opts.push(els[i].options[m].value);
+                    }
+                  }
+
                   sels.push({
                     'el': els[i]
                   , 'rect': cur
@@ -401,6 +409,7 @@ var Grimoire = function(O){
                     , 'innerHTML': els[i].innerHTML
                     , 'outerHTML': els[i].outerHTML
                     , 'value': els[i].value
+                    , 'options': el_opts
                     }
                   });
 
