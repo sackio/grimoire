@@ -453,6 +453,8 @@ var Grimoire = function(O){
     ], a.cb);
   };
 
+  M['getElement'] = M.getSelector;
+
   M['inspectPage'] = function(options, callback){
     var a = Belt.argulint(arguments)
       , self = this;
