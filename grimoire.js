@@ -330,7 +330,7 @@ var Grimoire = function(O){
 
           Belt.delete(a.o.page, 'listeners.onCallback.' + a.o.uuid);
 
-          if (a.o.converter){
+          if (a.o.converter && !Belt.isNull(selector)){
             if (_.isArray(selector)){
               selector = _.map(selector, function(s){ return a.o.converter(s); });
             } else {
