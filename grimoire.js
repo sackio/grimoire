@@ -172,6 +172,25 @@ var Grimoire = function(O){
       };
     });
 
+    _.each([
+      'getSelector'
+    , 'getElement'
+    , 'elementEnterText'
+    , 'elementClick'
+    , 'elementSelectOption'
+    , 'elementCheckboxClick'
+    ], function(s){
+      a.o.page['getSelector'] = function(options, callback){
+        var a = Belt.argulint(arguments)
+          , gb = {};
+        a.o = _.defaults(a.o, {
+          'page': a.o.page
+        });
+
+        return self.getSelector(a.o, a.cb);
+      };
+    });
+
     /*
       if verbose, log all page events
     */
@@ -362,6 +381,17 @@ var Grimoire = function(O){
 
           return ocb(undefined, sel);
         };
+
+        if (a.o.selector_template) a.o.selector = _.isFunction(a.o.selector_template) ? a.o.selector_template(a.o)
+                                                                                      : _.template(a.o.selector_template)(a.o);
+        if (a.o.content_template) a.o.content = _.isFunction(a.o.content_template) ? a.o.content_template(a.o)
+                                                                                   : _.template(a.o.content_template)(a.o);
+        if (a.o.filter_template) a.o.filter = _.isFunction(a.o.filter_template) ? a.o.filter_template(a.o)
+                                                                                : _.template(a.o.filter_template)(a.o);
+        if (a.o.transformer_template) a.o.transformer = _.isFunction(a.o.transformer_template) ? a.o.transformer_template(a.o)
+                                                                                               : _.template(a.o.transformer_template)(a.o);
+        if (a.o.converter_template) a.o.converter = _.isFunction(a.o.converter_template) ? a.o.converter_template(a.o)
+                                                                                         : _.template(a.o.converter_template)(a.o);
 
         if (a.o.verbose) console.log('Locating selector "' + a.o.selector + '"'
                                     + (a.o.content ? (' with content "' + a.o.content + '"') : '') + '...');
