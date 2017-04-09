@@ -172,7 +172,7 @@ var Grimoire = function(O){
       };
     });
 
-    _.each([
+    /*_.each([
       'getSelector'
     , 'getElement'
     , 'elementEnterText'
@@ -189,7 +189,7 @@ var Grimoire = function(O){
 
         return self[s](a.o, a.cb);
       };
-    });
+    });*/
 
     /*
       if verbose, log all page events
