@@ -180,14 +180,14 @@ var Grimoire = function(O){
     , 'elementSelectOption'
     , 'elementCheckboxClick'
     ], function(s){
-      a.o.page['getSelector'] = function(options, callback){
+      a.o.page[s] = function(options, callback){
         var a = Belt.argulint(arguments)
           , gb = {};
         a.o = _.defaults(a.o, {
           'page': a.o.page
         });
 
-        return self.getSelector(a.o, a.cb);
+        return self[s](a.o, a.cb);
       };
     });
 
